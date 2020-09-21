@@ -1,5 +1,10 @@
+# 目次
+- [ROSの概要](#ROSの概要)  
+- [ROSの環境構築](#ROSの環境構築)  
+- [ROSの動作確認](#ROSの動作確認)  
+- [公開パッケージを用いた画像処理](#公開パッケージを用いた画像処理)
+
 # ROSの概要
-## 概要
 ## 歴史
 - 2010年、アメリカのWillow Garageが開発した。源流はStanfordのAI Lab（STAIR）で、2018年現在はOSRFが管理している。
 - ハードを中心としたロボット指向プログラミングだったのが、ソフトを中心としたモジュール指向プログラミングに変わってきた。
@@ -198,3 +203,105 @@ $ rosservice call /clear
 $ rosrun turtlesim turtlesim_node __name:=hoge
 ```  
 逆に、異なる名前を指定すれば、複数の亀を発生させることも可能です。
+
+# 公開パッケージを用いた画像処理
+## USBカメラの利用方法
+ROSパッケージ「usb_cam」で画像を取得し、別のROSパッケージ「image_view」で画像を表示する。
+
+内蔵カメラが搭載されていないコンピューターの場合は、外付けカメラ（USBカメラ）を接続する。（VirtualBoxを使用している場合は、カメラが使用できるようにDevicesでUSB（Webcams）にチェックを入れる。）
+
+ターミナルで下記のコマンドを実行し、/dev/video0が存在することを確認する。カメラが２つある場合は/dev/video1も存在する。  
+```
+$ ls /dev/video*
+```  
+usb_camのデフォルトのピクセルフォーマットはmjpegなので、v4l2-ctlで設定を確認・変更しておく。
+
+ターミナルを3つ利用する。
+
+１つ目  
+```
+$ roscore
+```
+
+２つ目  
+```
+$ rosrun usb_cam usb_cam_node
+```
+
+３つ目  
+```
+$ rosrun image_view image_view image:=/usb_cam/image_raw
+```  
+ウィンドウが1つ表示されればOKです。
+
+---  
+※Melodicではcv_cameraが正常に動作しなかった。←Segmentation fault (core dumped)  
+
+2つ目  
+```
+$ rosrun cv_camera cv_camera_node
+```  
+3つ目  
+```
+$ rosrun image_view image_view image:=/cv_camera/image_raw
+```  
+---  
+※uvc_cameraはMelodicに対応していないらしい。
+
+## ROSパッケージの利用方法
+毎回、ターミナルを複数開くのは面倒なので、ここからはROSコマンド「roslaunch」を使用する。roslaunchコマンドでlaunchファイルを実行すると、複数のROSノードを1つのターミナルで起動することができる。
+
+サンプルプログラムをGitHub上に公開しているので、~/catkin_ws/srcにcloneして使用する。既にclone済みの場合はpullする。各自でGitHubアカウントを作成してください。
+
+```
+$ cd ~/catkin_ws/src
+$ git clone https://github.com/suzuki-takuo/stl_ros_sample.git
+```  
+サンプルプログラムをビルドする。  
+```
+$ cd ~/catkin_ws
+$ catkin_make
+$ source devel/setup.bash
+```  
+下記のとおり実行する。launchディレクトリー内のedge_detection.launchを確認すると、4つのROSノードが起動することが分かる。  
+```
+roslaunch stl_ros_sample edge_detection.launch
+```  
+ROSパッケージ「opencv_apps」は画像処理用ライブラリーであるOpenCVをROSで気軽に使用できるようにしたもので、この例では同パッケージ内のROSノード「edge_detection（エッジ検出）」を利用している。
+
+2つのウィンドウが表示され、顔の輪郭などに白線が出ていればOKです。
+
+研究では白線に基づいて顔を検出したり認識したりする。
+
+## ROSパッケージの結合方法
+画像処理の結果を利用して、亀を動かす。
+
+camera_infoの情報を利用することになるので、カメラのキャリブレーションを行う。→Camera Calibration
+
+試しに実行する。5つのROSノードが起動する。  
+```
+roslaunch stl_ros_sample turtle_operation.launch
+```  
+ROSパッケージ「opencv_apps」のROSノード「hough_circles（ハフ変換）」を利用して真円を検出する。そして、鈴木のROSパッケージ「stl_ros_sample」のROSノード「turtle_operation」で、真円の中心位置を亀の操作量へ変換する。
+
+何か円形のものを撮影し、円を検出させる。画像の上の方に円を検出させると前進、下の方に検出させると後進する。また、左の方に円を検出させると左回転、右の方に円を検出させると右回転する。
+
+恐らくカメラの解像度や撮影時の背景によって上手く動作しないので、ROSパラメーターを調整する。
+
+launchディレクトリー内のturtle_operation.launchを開き、下記のvalueを適当に変更し、上書き保存する。（※改めてcatkin_makeする必要はない。）
+
+- **accumulator_threshold**  
+円が検出されないときは値を小さく、円が検出されすぎるときは値を大きくする。  
+- **scale_linear**  
+亀の直進移動が早すぎる場合は値を大きく、遅すぎる場合は値を小さくする。  
+- **scale_angular**  
+亀の回転移動が早すぎる場合は値を大きく、遅すぎる場合は値を小さくする。
+
+亀は上手く動かせましたか？
+
+## ポイント
+重要なポイントは、5つのノードのうち、鈴木は1つのノードしか開発していないということです。ROSはユーザー数が多いため、画像の取得や表示など、多くの人が必要としている機能は既に実装・公開されています。そのため、自分が得意とする部分の開発に注力することができます。
+
+トヨタ自動車の生活支援ロボットHSRも大所帯で開発していますが、愛県大グループでは点群処理用ROSパッケージの開発のみを行っており、その他の部分はトヨタ自動車や他の研究機関が開発してくれています。ROSを利用することで共同研究しやすくなったと言えます。
+
+ROSの演習は以上です。お疲れ様でした。（何か間違いを見つけたら教えてください。）
