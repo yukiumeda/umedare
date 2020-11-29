@@ -1,6 +1,20 @@
 # Docker
 ## Ubuntu
-- 
+###
+- Dockerをインストールする。
+  ```
+  $ curl -fsSL https://get.docker.com -o get-docker.sh
+  $ sh get-docker.sh
+  ```
+- 一般ユーザーでもdockerコマンドを使用できるようにする。
+  ```
+  $ sudo usermod -aG docker <ユーザー名>
+  ```
+- 一旦ログアウトし、再度ログインする。
+- dockerが実行できることを確認する。
+  ```
+  $ docker version
+  ```
 
 ## Mac
 ### 準備
@@ -9,7 +23,7 @@
 - Docker Desktop for Macをインストールする。
   - https://docs.docker.com/get-docker/
 - Docker.appを起動し、IDとPasswordを入力する。
-- ターミナルでDockerのバージョンを確認する。
+- ターミナルでDockerが実行できることを確認する。
   ```
   $ docker version
   ```
