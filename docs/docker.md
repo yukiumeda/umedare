@@ -1,6 +1,21 @@
-# 集合時間と集合場所
-- 8時50分にC棟のラウンジに集合してください。TAがR棟のアリーナに案内します。
-- 遅刻した人はTeamsで連絡してください。TAがC棟のラウンジに迎えに行きます。
+# Docker
+## Ubuntu
+- 
 
-# 実験内容
-- [準備](https://stl-apu.github.io/advanced_experiment/preparetions)
+## Mac
+- Dockerのアカウントを作成し、Docker Hubにアクセスする。
+  - https://hub.docker.com/
+- Docker Desktop for Macをインストールする。
+  - https://docs.docker.com/get-docker/
+- Docker.appを起動し、IDとPasswordを入力する。
+- ターミナルでDockerのバージョンを確認する。
+'''
+$ docker version
+'''
+- イメージをダウンロードする。例えば、Ubuntuの18.04をダウンロードする。そのPCのアーキテクチャーに合った複数のイメージがダウンロードされるかも…。
+ $ docker pull ubuntu:18.04
+- イメージが存在するかを確認する。
+ $ docker images
+
+## Windows
+
