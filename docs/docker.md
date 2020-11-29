@@ -21,9 +21,9 @@
  $ docker images
 
 ### 起動
-- コンテナーを立ち上げる。オプションnameでコンテナーに対して名前を付ける。
+- コンテナーを立ち上げる。オプションnameでコンテナーに対して名前を付ける。例えば「ubuntu」と名付ける。
   ```
-  $ docker run -it -d --name ubuntu ubuntu:18.04
+  $ docker run -it -d --name コンテナー名 ubuntu:18.04
   ```
 - コンテナーが存在するかを確認する。
   ```
@@ -43,6 +43,16 @@
     ```
     $ apt install sudo
     ```
+
+### 停止
+- コンテナーを抜ける。
+  ```
+  $ exit
+  ```
+- コンテナーを止める。
+  ```
+  $ docker stop ubuntu
+  ```    
 
 ## Windows
 
